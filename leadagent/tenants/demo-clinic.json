@@ -1,0 +1,36 @@
+{
+  "business_name": "SmileCare Dental Clinic",
+  "business_type": "dental clinic",
+  "city": "Kochi, Kerala",
+  "assistant_name": "Asha from SmileCare",
+  "greeting": "Hi! I'm Asha from SmileCare Dental 😊 Ask me about treatments, prices or book a visit.",
+  "brand_color": "#0f766e",
+  "address": "2nd Floor, MG Road, Ernakulam, Kochi 682016",
+  "owner_phone_public": "+91 98470 00000",
+  "owner_whatsapp": "",
+  "timezone": "Asia/Kolkata",
+  "slot_minutes": 30,
+  "hours": {
+    "mon": ["10:00", "19:00"], "tue": ["10:00", "19:00"], "wed": ["10:00", "19:00"],
+    "thu": ["10:00", "19:00"], "fri": ["10:00", "19:00"], "sat": ["10:00", "14:00"], "sun": null
+  },
+  "services": [
+    {"name": "Consultation & check-up", "price": "₹300", "details": "waived if treatment is done the same day"},
+    {"name": "Scaling & polishing", "price": "₹1,200"},
+    {"name": "Tooth-coloured filling", "price": "₹1,500 per tooth"},
+    {"name": "Root canal treatment", "price": "₹5,500 - ₹8,000 per tooth", "details": "crown extra"},
+    {"name": "Teeth whitening", "price": "₹9,000"},
+    {"name": "Clear aligners", "price": "from ₹65,000", "details": "EMI available, needs consultation first"},
+    {"name": "Dental implant", "price": "from ₹28,000 per tooth", "details": "needs X-ray and consultation"}
+  ],
+  "faqs": [
+    {"q": "Do you accept insurance?", "a": "We give a detailed bill for reimbursement. Direct cashless is not available."},
+    {"q": "Is parking available?", "a": "Yes, free parking in the building basement."},
+    {"q": "Payment methods?", "a": "UPI, cards, cash. 0% EMI on aligners and implants via Bajaj Finserv."},
+    {"q": "Emergency?", "a": "For severe pain or swelling, we keep emergency slots daily - hand off to the team."}
+  ],
+  "extra_instructions": "Never diagnose. For pain/swelling, be kind and offer the earliest slot.",
+  "monthly_reply_limit": 3000,
+  "dashboard_key": "demo-key-change-me",
+  "whatsapp": {"phone_number_id": "", "access_token_env": "WA_TOKEN_DEMO_CLINIC"}
+}

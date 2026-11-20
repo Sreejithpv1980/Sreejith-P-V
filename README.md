@@ -1,5 +1,7 @@
 # HR Pathways Academy
 
+> This repo also contains **[LeadDesk AI](leadagent/README.md)**, a sellable AI receptionist agent for small businesses (WhatsApp and website), with a [business plan](leadagent/BUSINESS_PLAN.md).
+
 A plug-and-play learning management system for HR professionals, from fresh graduates to CHROs. It's a single HTML file with no install, no server, no account and no build tools needed to use it.
 
 ## Use it

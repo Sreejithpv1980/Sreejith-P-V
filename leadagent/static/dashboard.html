@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Leads Dashboard</title>
+<style>
+:root{--bg:#f6f7f8;--card:#fff;--text:#111;--muted:#666;--line:#e3e5e8;--accent:#0f766e;--hot:#c2410c;--warm:#b45309;--cold:#64748b}
+@media (prefers-color-scheme:dark){:root{--bg:#111315;--card:#1b1e21;--text:#eee;--muted:#9aa;--line:#2c3035}}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:8px 0 16px}h2{font-size:16px;margin:0 0 10px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:16px;overflow-x:auto}
+.stat b{display:block;font-size:26px}.stat span{color:var(--muted)}
+table{border-collapse:collapse;width:100%;min-width:640px}th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500}.tag{padding:2px 8px;border-radius:99px;color:#fff;font-size:12px}
+.hot{background:var(--hot)}.warm{background:var(--warm)}.cold{background:var(--cold)}
+a,button{color:var(--accent)}button{background:none;border:1px solid var(--accent);border-radius:6px;padding:3px 8px;cursor:pointer}
+details{border-bottom:1px solid var(--line);padding:8px 0}summary{cursor:pointer}
+.msg{margin:4px 0;white-space:pre-wrap}.msg.user b{color:var(--accent)}
+</style></head>
+<body><main>
+<h1 id="title">Loading…</h1>
+<div class="stats" id="stats"></div>
+<div class="card"><h2>Leads <a id="csv" href="#" style="font-size:13px;font-weight:400">· download CSV</a></h2><table id="leads"></table></div>
+<div class="card"><h2>Appointments</h2><table id="bookings"></table></div>
+<div class="card"><h2>Recent conversations</h2><div id="convs"></div></div>
+</main>
+<script>
+const tenant = location.pathname.split("/").pop();
+const key = new URLSearchParams(location.search).get("key") || "";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function table(el, cols, rows){
+  el.innerHTML = "<tr>" + cols.map(c => `<th>${c[1]}</th>`).join("") + "</tr>" +
+    (rows.length ? rows.map(r => "<tr>" + cols.map(c => `<td>${c[2] ? c[2](r) : esc(r[c[0]])}</td>`).join("") + "</tr>").join("")
+     : `<tr><td colspan="${cols.length}">Nothing yet</td></tr>`);
+}
+async function load(){
+  const r = await fetch(`/api/dashboard/${tenant}?key=${encodeURIComponent(key)}`);
+  if (!r.ok){ document.getElementById("title").textContent = "Access denied - check your dashboard link"; return; }
+  const d = await r.json();
+  document.title = d.business_name + " · Leads";
+  document.getElementById("title").textContent = d.business_name + " - AI receptionist";
+  document.getElementById("csv").href = `/api/dashboard/${tenant}/leads.csv?key=${encodeURIComponent(key)}`;
+  const hot = d.leads.filter(l => l.score === "hot").length;
+  const month = d.usage[0] || {replies:0};
+  document.getElementById("stats").innerHTML = [
+    [d.leads.length, "Leads captured"], [hot, "Hot leads"], [d.bookings.length, "Appointments booked"],
+    [month.replies, "AI replies this month"], [d.conversations.filter(c => c.handoff).length, "Waiting for you"]
+  ].map(s => `<div class="card stat"><b>${s[0]}</b><span>${s[1]}</span></div>`).join("");
+  table(document.getElementById("leads"), [
+    ["created_at","When",r=>esc(r.created_at.slice(0,16).replace("T"," "))],["name","Name"],
+    ["phone","Phone",r=>r.phone?`<a href="tel:${esc(r.phone)}">${esc(r.phone)}</a>`:""],
+    ["interest","Wants"],["budget","Budget"],["timeline","When"],
+    ["score","Score",r=>r.score?`<span class="tag ${esc(r.score)}">${esc(r.score)}</span>`:""],["notes","Notes"]], d.leads);
+  table(document.getElementById("bookings"), [["slot","Slot"],["name","Name"],["phone","Phone"],["service","Service"]], d.bookings);
+  document.getElementById("convs").innerHTML = d.conversations.map(c => `<details><summary>
+    ${esc(c.updated_at.slice(0,16).replace("T"," "))} · ${esc(c.channel)} · ${esc(c.session_id)}
+    ${c.handoff ? ` · <b style="color:var(--hot)">needs you</b> <button data-s="${esc(c.session_id)}">AI can resume</button>` : ""}</summary>
+    ${c.transcript.map(m => `<div class="msg ${m.role}"><b>${m.role === "user" ? "Customer" : "AI"}:</b> ${esc(m.text.replace(/^\[.*?\]\n?/, ""))}</div>`).join("")}
+    </details>`).join("") || "Nothing yet";
+  document.querySelectorAll("button[data-s]").forEach(b => b.onclick = async e => {
+    e.preventDefault();
+    await fetch(`/api/dashboard/${tenant}/release/${encodeURIComponent(b.dataset.s)}?key=${encodeURIComponent(key)}`, {method:"POST"});
+    load();
+  });
+}
+load(); setInterval(load, 30000);
+</script></body></html>
